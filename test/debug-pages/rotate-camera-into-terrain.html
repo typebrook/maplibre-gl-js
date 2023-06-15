@@ -37,7 +37,7 @@
 
   <body>
     <div id="map"></div>
-    </div>
+    <div id="overlay">
     <svg id="camera" class="svg" version="1.1" width="300" height="200" xmlns="http://www.w3.org/2000/svg">
         <circle cx="15" cy="15" r="10" fill="red" />
     </svg>
@@ -49,9 +49,9 @@
     <script>
       var map = (window.map = new maplibregl.Map({
           container: 'map',
-          zoom: 12.56,
-          center: [6.55661, 61.282],
-          pitch: 60,
+          zoom: 15.22,
+          center: [6.556991, 61.288471],
+          pitch: 68,
           hash: true,
           style: {
               version: 8,
@@ -84,6 +84,30 @@
           maxPitch: 85,
       }));
 
+      function rotateCamera(timestamp) {
+          // clamp the rotation between 0 -360 degrees
+          // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
+          map.rotateTo((timestamp / 100) % 360, { duration: 0 });
+          console.log(timestamp)
+          // Request the next frame of the animation.
+              requestAnimationFrame(rotateCamera);
+
+          let cameraPoint = map.transform.getCameraPoint();
+          let centerPoint = map.transform.centerPoint;
+          const svgCamera = document.getElementById('camera');
+          svgCamera.style.left = `${cameraPoint.x.toString()}px`;
+          svgCamera.style.top = `${cameraPoint.y.toString()}px`;
+
+          const svgCenter = document.getElementById('center');
+          svgCenter.style.left = `${centerPoint.x.toString()}px`;
+          svgCenter.style.top = `${centerPoint.y.toString()}px`;
+      }
+
+      map.on('load', function () {
+          // Start the animation.
+          rotateCamera(0);
+      });
+
       map.addControl(
           new maplibregl.NavigationControl({
               visualizePitch: true,
@@ -98,21 +122,6 @@
               exaggeration: 1,
           })
       );
-
-      map.on('idle', function(e) {
-        let cameraPosition = map.transform.getCameraPosition();
-        let cameraPoint = map.transform.getCameraPoint();
-        let center = map.transform.center;
-        let centerPoint = map.transform.centerPoint;
-
-        const svgCamera = document.getElementById('camera');
-        svgCamera.style.left = `${cameraPoint.x.toString()}px`;
-        svgCamera.style.top = `${cameraPoint.y.toString()}px`;
-
-        const svgCenter = document.getElementById('center');
-        svgCenter.style.left = `${centerPoint.x.toString()}px`;
-        svgCenter.style.top = `${centerPoint.y.toString()}px`;
-      });
     </script>
   </body>
 </html>
