@@ -397,10 +397,16 @@ class Painter {
             // this is disabled, because render-to-texture is rendering all layers from bottom to top.
             this.opaquePassCutoff = 0;
 
+            // check if projMatrix has changed
+            if (!mat4.equals(this.terrainFacilitator.matrix, this.transform.projMatrix)) {
+               this.terrainFacilitator.dirty = true;
+               mat4.copy(this.terrainFacilitator.matrix, this.transform.projMatrix);
+               this.transform.checkTerrainCollision(this.style.map.terrain);
+            }
+
             // update coords/depth-framebuffer on camera movement, or tile reloading
             const newTiles = this.style.map.terrain.sourceCache.tilesAfterTime(this.terrainFacilitator.renderTime);
-            if (this.terrainFacilitator.dirty || !mat4.equals(this.terrainFacilitator.matrix, this.transform.projMatrix) || newTiles.length) {
-                mat4.copy(this.terrainFacilitator.matrix, this.transform.projMatrix);
+            if (this.terrainFacilitator.dirty || newTiles.length) {
                 this.terrainFacilitator.renderTime = Date.now();
                 this.terrainFacilitator.dirty = false;
                 drawDepth(this, this.style.map.terrain);
