@@ -2906,6 +2906,11 @@ class Map extends Camera {
 
         this._placementDirty = this.style && this.style._updatePlacement(this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions);
 
+        // check if projMatrix has changed
+        if (this.terrain && this.painter.isCameraMatrixChangedByTerrain()) {
+          this.transform.checkTerrainCollision(this.terrain);
+        }
+
         // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
