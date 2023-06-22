@@ -48,41 +48,37 @@ describe('Browser tests', () => {
         });
     }, 40000);
 
-    test('Load should fire before resize and moveend', async () => {
-        const firstFiredEvent = await page.evaluate(() => {
-            const map2 = new maplibregl.Map({
-                container: 'map',
-                style: 'https://demotiles.maplibre.org/style.json',
-                center: [10, 10],
-                zoom: 10
-            });
-            return new Promise<string>((resolve, _reject) => {
-                map2.once('resize', () => resolve('resize'));
-                map2.once('moveend', () => resolve('moveend'));
-                map2.once('load', () => resolve('load'));
-            });
-        });
-        expect(firstFiredEvent).toBe('load');
-    }, 20000);
-
-    test('Drag to the left', async () => {
+    test('Change bearing to collide with terrain', async () => {
 
         const canvas = await page.$('.maplibregl-canvas');
         const canvasBB = await canvas?.boundingBox();
 
+        const originalPitch = await page.evaluate(() => {
+            return map.getPitch()
+        });
+
+        await page.keyboard.down('ControlLeft');
         // Perform drag action, wait a bit the end to avoid the momentum mode.
         await page.mouse.move(canvasBB!.x, canvasBB!.y);
         await page.mouse.down();
         await page.mouse.move(100, 0);
         await new Promise(r => setTimeout(r, 200));
         await page.mouse.up();
+        await page.keyboard.up('ControlLeft');
 
-        const center = await page.evaluate(() => {
-            return map.getCenter();
+        const pitch = await page.evaluate(() => {
+            return map.getPitch()
         });
 
-        expect(center.lng).toBeCloseTo(-35.15625, 4);
-        expect(center.lat).toBeCloseTo(0, 7);
+        const cameraPosition = await page.evaluate(() => {
+            return map.transform;
+        });
+        const terrainAltitude = await page.evaluate(() => {
+            return map.transform.getElevation(cameraPosition.lngLat, map.terrain) + 10;
+        });
+
+        expect(pitch).toBeLessThan(originalPitch)
+        expect(cameraPosition.altitude).toBeGreaterThan(terrainAltitude)
     }, 20000);
 
     afterEach(async() => {
