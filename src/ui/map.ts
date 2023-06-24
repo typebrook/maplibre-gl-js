@@ -3165,4 +3165,19 @@ export class Map extends Camera {
     getCameraTargetElevation(): number {
         return this.transform.elevation;
     }
+
+    // check that camera is over terrain
+    checkTerrainCollision(): {
+        camera: number,
+        terrain: number,
+        pitch?:  number | null
+    } {
+        // buffer above terrain surface
+        // TODO Change by zoom level
+        const buffer = 100
+        const camera = this.transform.getCameraPosition();
+        const altitude = this.transform.getElevation(camera.lngLat, this.terrain) + buffer;
+        const pitch = camera.altitude < altitude ? this.transform.maxPitchForCameraAltitude(altitude) : null
+        return { camera: camera.altitude, terrain: altitude, pitch: pitch }
+    }
 }
