@@ -2910,7 +2910,12 @@ export class Map extends Camera {
         // check if projMatrix has changed
         if (this.terrain && this.painter.isCameraMatrixChangedByTerrain()) {
             const result = this.checkTerrainCollision();
-            if (result.pitch) this.transform.pitch = result.pitch
+            if (result.pitch) {
+                this.transform.pitch = result.pitch
+                this.transform.maxPitch = Math.min(this.transform.maxPitch, result.pitch)
+            } else {
+                this.transform.maxPitch = this.transform._maxPitchFromConstructor
+            }
             console.log(result);
         }
 

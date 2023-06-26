@@ -51,6 +51,7 @@ export class Transform {
     _maxZoom: number;
     _minPitch: number;
     _maxPitch: number;
+    _maxPitchFromConstructor: number;
     _center: LngLat;
     _elevation: number;
     _pixelPerMeter: number;
@@ -70,6 +71,7 @@ export class Transform {
 
         this._minPitch = (minPitch === undefined || minPitch === null) ? 0 : minPitch;
         this._maxPitch = (maxPitch === undefined || maxPitch === null) ? 60 : maxPitch;
+        this._maxPitchFromConstructor = this._maxPitch;
 
         this.setMaxBounds();
 
